@@ -3,10 +3,10 @@
     "builds": [
         {
             "src": "api/index.php",
-            "use": "vercel-php@0.6.2"
+            "use": "vercel-php@0.7.3"
         },
         {
-            "src": "/public/**",
+            "src": "public/**",
             "use": "@vercel/static"
         }
     ],
@@ -16,17 +16,42 @@
             "dest": "/public/build/$1"
         },
         {
+            "src": "/css/(.*)",
+            "dest": "/public/css/$1"
+        },
+        {
+            "src": "/images/(.*)",
+            "dest": "/public/images/$1"
+        },
+        {
+            "src": "/js/(.*)",
+            "dest": "/public/js/$1"
+        },
+        {
+            "src": "/favicon.ico",
+            "dest": "/public/favicon.ico"
+        },
+        {
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
     ],
     "env": {
+        "APP_NAME": "Inay Kitchen",
         "APP_ENV": "production",
         "APP_KEY": "base64:UnV4ZckN8SUR0YOSRJZQn8SikC0Tpb1JRSNY+Gg/kk4=",
         "APP_DEBUG": "true",
-        "CACHE_STORE": "array",
+        "APP_URL": "https://inaykitchen.vercel.app",
+        "DB_CONNECTION": "sqlite",
+        "DB_DATABASE": "/tmp/laravel/database.sqlite",
+        "CACHE_STORE": "file",
+        "CACHE_DRIVER": "file",
+        "SESSION_DRIVER": "file",
+        "SESSION_LIFETIME": "120",
+        "QUEUE_CONNECTION": "sync",
         "LOG_CHANNEL": "stderr",
-        "SESSION_DRIVER": "cookie",
-        "QUEUE_CONNECTION": "sync"
+        "LOG_LEVEL": "error",
+        "FILESYSTEM_DISK": "local",
+        "BROADCAST_CONNECTION": "log"
     }
 }
