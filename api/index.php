@@ -22,37 +22,22 @@ $dirs = [
 
 foreach ($dirs as $dir) {
     if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
+        @mkdir($dir, 0755, true);
     }
 }
 
 // 2. Setup SQLite database in /tmp
 $dbPath = $tmpBase . '/database.sqlite';
 if (!file_exists($dbPath)) {
-    touch($dbPath);
+    @touch($dbPath);
 }
 
 // 3. Override environment config before Laravel boots
-$_ENV['STORAGE_PATH']       = $storagePath;
-$_ENV['DB_DATABASE']        = $dbPath;
-$_ENV['VIEW_COMPILED_PATH'] = $viewsPath;
-$_ENV['CACHE_DRIVER']       = 'array';
-$_ENV['SESSION_DRIVER']     = 'array';
-$_ENV['QUEUE_CONNECTION']   = 'sync';
-
 putenv('STORAGE_PATH='       . $storagePath);
 putenv('DB_DATABASE='        . $dbPath);
 putenv('VIEW_COMPILED_PATH=' . $viewsPath);
-putenv('CACHE_DRIVER=array');
-putenv('SESSION_DRIVER=array');
-putenv('QUEUE_CONNECTION=sync');
 
 // -----------------------------------------------
-
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__ . '/../storage/framework/maintenance.php')) {
-    require $maintenance;
-}
 
 // Register the Composer autoloader...
 require __DIR__ . '/../vendor/autoload.php';
@@ -60,10 +45,28 @@ require __DIR__ . '/../vendor/autoload.php';
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-/** @var Application $app */
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+try {
+    /** @var Application $app */
+    $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Override storage path to /tmp on Vercel
-$app->useStoragePath($storagePath);
+    // Override storage path to /tmp on Vercel
+    $app->useStoragePath($storagePath);
 
-$app->handleRequest(Request::capture());
+    $app->handleRequest(Request::capture());
+
+} catch (\Throwable $e) {
+    // Show error if debug is on
+    if (getenv('APP_DEBUG') === 'true' || getenv('APP_ENV') === 'local') {
+        header('Content-Type: text/plain');
+        echo "=== LARAVEL FATAL ERROR ===\n";
+        echo "Message: " . $e->getMessage() . "\n";
+        echo "File: " . $e->getFile() . "\n";
+        echo "Line: " . $e->getLine() . "\n\n";
+        echo "Trace:\n" . $e->getTraceAsString() . "\n";
+        exit(1);
+    }
+    
+    // Log error and throw for default 500 behavior
+    error_log("Laravel Fatal Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+    throw $e;
+}
