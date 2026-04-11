@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,8 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS on Vercel
+        if (env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
+
         // Auto-run migrations on Vercel
-        // Since SQLite in /tmp is lost on cold start, we check and migrate
         if (config('database.default') === 'sqlite') {
             try {
                 if (!Schema::hasTable('orders')) {
