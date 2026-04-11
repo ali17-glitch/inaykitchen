@@ -47,7 +47,7 @@
         "APP_NAME": "Inay Kitchen",
         "APP_ENV": "production",
         "APP_KEY": "base64:UnV4ZckN8SUR0YOSRJZQn8SikC0Tpb1JRSNY+Gg/kk4=",
-        "APP_DEBUG": "false",
+        "APP_DEBUG": "true",
         "APP_URL": "https://inaykitchen.vercel.app",
         "DB_CONNECTION": "sqlite",
         "DB_DATABASE": "/tmp/database.sqlite",
