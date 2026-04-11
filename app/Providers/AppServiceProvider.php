@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
             try {
                 $dbPath = config('database.connections.sqlite.database');
 
-                // Ensure the directory and file exist (needed in Vercel /tmp)
+                // Ensure the SQLite file exists
                 if ($dbPath && $dbPath !== ':memory:') {
                     $dir = dirname($dbPath);
                     if (!is_dir($dir)) {
@@ -37,15 +36,15 @@ class AppServiceProvider extends ServiceProvider
                     }
                 }
 
-                // Check if the orders table exists, if not run migrations
+                // Run migrations if the orders table does not exist yet
                 if (!Schema::hasTable('orders')) {
                     \Illuminate\Support\Facades\Artisan::call('migrate', [
-                        '--force' => true,
+                        '--force'          => true,
                         '--no-interaction' => true,
                     ]);
                 }
-            } catch (\Exception $e) {
-                // Silently continue if migration fails (e.g., read-only filesystem)
+            } catch (\Throwable $e) {
+                // Silently log and continue — do not crash the app
                 \Illuminate\Support\Facades\Log::error('Auto-migration failed: ' . $e->getMessage());
             }
         }
